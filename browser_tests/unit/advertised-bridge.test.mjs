@@ -47,3 +47,19 @@ test('a fresh browser uses the configured backend instead of overwriting it with
   });
   assert.equal(selected, 'ollama');
 });
+
+test('remote Ollama is not replaced by a signed-in provider when local CLI readiness is false', () => {
+  const start = source.indexOf('  function applyReadiness(data, opts)');
+  const apply = source.slice(start, source.indexOf('  // "Set up the other provider"', start));
+  const notes = [];
+  const context = {
+    selectedBackend: 'ollama', readinessFromOrchestrator: false, backendReady: {},
+    onboard: {}, anyReady: false, lastStatus: 'connecting', autoPickDone: false,
+    externalOrchestratorMode: () => true, backendEnabled: () => true,
+    BACKEND_LABELS: { ollama: 'Ollama', claude: 'Claude' },
+    renderBackendChips: () => {}, setAskPlaceholder: () => {}, appendSystem: message => notes.push(message),
+    data: { backends: [{ backend: 'ollama', ready: false, cli: false }, { backend: 'claude', ready: true }] },
+  };
+  assert.equal(runInNewContext(`${apply}; applyReadiness(data, { fromOrchestrator: true }); selectedBackend`, context), 'ollama');
+  assert.deepEqual(notes, []);
+});

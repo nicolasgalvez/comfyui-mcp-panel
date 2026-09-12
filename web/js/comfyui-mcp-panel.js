@@ -8677,6 +8677,12 @@ function buildPanel() {
       onboard.hidden = true;
     }
     if (!anyReady || autoPickDone) return;
+    // A local executable/auth probe cannot establish readiness of remote Ollama.
+    // Keep the chosen backend and let its actual connection report availability.
+    if (externalOrchestratorMode() && selectedBackend === "ollama") {
+      autoPickDone = true;
+      return;
+    }
     const sel = list.find((b) => b.backend === selectedBackend);
     if (sel && sel.ready === false) {
       // Never auto-pick an experimental backend (b.experimental, e.g. Copilot) —
