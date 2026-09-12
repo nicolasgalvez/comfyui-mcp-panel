@@ -37,3 +37,13 @@ test('preserves an explicitly configured bridge', async () => {
 test('rejects an insecure advertised bridge', async () => {
   assert.equal(await panel({ advertised: 'ws://remote.example/' }).fetchAdvertisedBridgeUrl(), null);
 });
+
+test('a fresh browser uses the configured backend instead of overwriting it with Claude', () => {
+  const start = source.indexOf('  let selectedBackend = (() => {');
+  const initializer = source.slice(start, source.indexOf('  // The backend we\'re actually CONNECTED', start));
+  const selected = runInNewContext(`${initializer}; selectedBackend`, {
+    window: { localStorage: { getItem: () => null } },
+    STORAGE_KEY_BACKEND: 'runtime', SETTING_BACKEND: 'default', getSetting: () => 'ollama',
+  });
+  assert.equal(selected, 'ollama');
+});

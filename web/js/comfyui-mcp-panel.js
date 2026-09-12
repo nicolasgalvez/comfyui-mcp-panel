@@ -8248,7 +8248,7 @@ function buildPanel() {
   // reopens). Defaults to claude for back-compat.
   let selectedBackend = (() => {
     try {
-      return window.localStorage.getItem(STORAGE_KEY_BACKEND) || "claude";
+      return window.localStorage.getItem(STORAGE_KEY_BACKEND) || getSetting(SETTING_BACKEND) || "claude";
     } catch {
       return "claude";
     }
