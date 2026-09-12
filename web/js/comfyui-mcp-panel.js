@@ -12417,13 +12417,10 @@ function buildPanel() {
     })();
     return true;
   }
-  // On an https page (a remote pod), the local orchestrator driving this pod via
-  // `connect` advertises a SECURE wss:// bridge URL (cloudflared tunnel, token in
-  // the query) here — a plain ws://127.0.0.1 from an https origin is blocked by the
-  // browser (mixed-content / Private Network Access). Returns the wss URL or null.
-  // No-op on http/localhost pages, where the plain ws:// default works.
+  // The browser can be on a different machine from the orchestrator on either
+  // HTTP (LAN) or HTTPS. Prefer its advertised secure bridge in both cases;
+  // browser loopback is not the ComfyUI host or a Docker sidecar.
   async function fetchAdvertisedBridgeUrl() {
-    if (location.protocol !== "https:") return null;
     try {
       const res = await api.fetchApi("/comfyui_mcp_panel/bridge_url");
       const data = await res.json().catch(() => ({}));
@@ -12452,7 +12449,6 @@ function buildPanel() {
   // advertise (or the orchestrator itself coming up after this tab started
   // retrying) self-heals instead of wedging permanently.
   async function reclaimAdvertisedBridgeUrl() {
-    if (location.protocol !== "https:") return;
     const wanted = urlInput.value.trim();
     const manualOverride =
       !!wanted && wanted !== defaultBridgeUrlFor(selectedBackend) && wanted !== lastAutoUrl;
